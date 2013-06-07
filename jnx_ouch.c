@@ -296,11 +296,9 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
   proto_tree_add_uint(jnx_ouch_tree, hf_jnx_ouch_firm, tvb, offset, 4, firm);
   offset += 4;
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_display, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_capacity, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
@@ -313,7 +311,6 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 static int
 replace(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
-  guint value;
   guint32 time_in_force;
 
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_existing_order_token);
@@ -325,7 +322,6 @@ replace(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset
   proto_tree_add_uint(jnx_ouch_tree, hf_jnx_ouch_time_in_force, tvb, offset, 4, time_in_force);
   offset += 4;
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_display, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
@@ -381,18 +377,15 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   proto_tree_add_uint(jnx_ouch_tree, hf_jnx_ouch_firm, tvb, offset, 4, firm);
   offset += 4;
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_display, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_capacity, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
   offset = order_ref_number(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_reference_number);
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, offset, "minqty");
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_order_state, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
@@ -428,14 +421,12 @@ replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   proto_tree_add_uint(jnx_ouch_tree, hf_jnx_ouch_time_in_force, tvb, offset, 4, time_in_force);
   offset += 4;
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_display, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
   offset = order_ref_number(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_reference_number);
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, offset, "minqty");
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_order_state, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
@@ -448,12 +439,9 @@ replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 static int
 canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
-  guint value;
-
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_decrement_shares, offset, "qty");
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_canceled_reason, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
@@ -464,13 +452,10 @@ canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 static int
 executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
-  guint value;
-
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_executed_shares, offset, "qty");
   offset = price(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_execution_price, offset);
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_liquidity_flag, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
@@ -483,11 +468,8 @@ executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 static int
 rejected(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
-  guint value;
-
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
 
-  value = tvb_get_guint8(tvb, offset);
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_rejected_reason, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 

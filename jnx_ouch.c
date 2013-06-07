@@ -95,6 +95,11 @@ static const value_string rejected_order_reason_val[] = {
  { 0, NULL }
 };
 
+static const value_string time_in_force_val[] = {
+ { 0,     "Immediate" },
+ { 99999, "DAY" },
+};
+
 /* Initialize the protocol and registered fields */
 static int proto_jnx_ouch = -1;
 static dissector_handle_t jnx_ouch_handle;
@@ -722,7 +727,7 @@ proto_register_jnx_ouch(void)
 
     { &hf_jnx_ouch_time_in_force,
       { "Time in Force",         "jnx_ouch.time_in_force",
-        FT_UINT32, BASE_DEC,  NULL, 0x0,
+        FT_UINT32, BASE_DEC,  VALS(time_in_force_val), 0x0,
         "Specifies how long the order remains in effect", HFILL }},
 
     { &hf_jnx_ouch_firm,

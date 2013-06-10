@@ -100,6 +100,14 @@ static const value_string time_in_force_val[] = {
  { 99999, "DAY" },
 };
 
+static const value_string buy_sell_val[] = {
+ { 'B', "Buy" },
+ { 'S', "Sell" },
+ { 'T', "Short sell" },
+ { 'E', "Short sell exempt" },
+ { 0, NULL}
+};
+
 /* Initialize the protocol and registered fields */
 static int proto_jnx_ouch = -1;
 static dissector_handle_t jnx_ouch_handle;
@@ -278,8 +286,6 @@ jnx_proto_tree_add_char(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_tree,
 static int
 order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
-  gint col_info = PINFO_COL(pinfo);
-  guint8 value;
   guint32 time_in_force;
   guint32 firm;
 
@@ -288,12 +294,7 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_client_reference, tvb, offset, 10, ENC_ASCII|ENC_NA);
   offset += 10;
 
-  value = tvb_get_guint8(tvb, offset);
-  if (col_info) {
-      col_append_fstr(pinfo->cinfo, COL_INFO, "%c ", value);
-  }
-  proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, 1, ENC_ASCII|ENC_NA);
-  offset += 1;
+  offset = jnx_proto_tree_add_char(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_buy_sell, buy_sell_val, offset);
 
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, offset, "qty");
 
@@ -359,8 +360,6 @@ cancel(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 static int
 accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
-  gint col_info = PINFO_COL(pinfo);
-  guint8 value;
   guint32 time_in_force;
   guint32 firm;
 
@@ -369,12 +368,7 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_client_reference, tvb, offset, 10, ENC_ASCII|ENC_NA);
   offset += 10;
 
-  value = tvb_get_guint8(tvb, offset);
-  if (col_info) {
-      col_append_fstr(pinfo->cinfo, COL_INFO, "%c ", value);
-  }
-  proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, 1, ENC_ASCII|ENC_NA);
-  offset += 1;
+  offset = jnx_proto_tree_add_char(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_buy_sell, buy_sell_val, offset);
 
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, offset, "qty");
   offset = stock(tvb, pinfo, jnx_ouch_tree, offset);
@@ -409,18 +403,11 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 static int
 replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
-  gint col_info = PINFO_COL(pinfo);
-  guint value;
   guint32 time_in_force;
 
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_replacement_order_token);
 
-  value = tvb_get_guint8(tvb, offset);
-  if (col_info) {
-      col_append_fstr(pinfo->cinfo, COL_INFO, "%c ", value);
-  }
-  proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, 1, ENC_ASCII|ENC_NA);
-  offset += 1;
+  offset = jnx_proto_tree_add_char(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_buy_sell, buy_sell_val, offset);
 
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, offset, "qty");
   offset = stock(tvb, pinfo, jnx_ouch_tree, offset);
@@ -511,7 +498,7 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
         const gchar *rep = val_to_str(jnx_ouch_type, soupbintcp_type == 'U' ? in_message_types_val : out_message_types_val, "Unknown packet type (0x%02x) ");
         if (col_info) {
             col_clear(pinfo->cinfo, COL_INFO);
-            col_add_str(pinfo->cinfo, COL_INFO, rep);
+            col_add_str(pinfo->cinfo, COL_INFO, "%s ", rep);
         }
         if (tree) {
             ti = proto_tree_add_protocol_format(tree, proto_jnx_ouch, tvb, offset, -1, "SBI Japannext OUCH %s",

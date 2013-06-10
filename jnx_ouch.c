@@ -498,7 +498,7 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
         const gchar *rep = val_to_str(jnx_ouch_type, soupbintcp_type == 'U' ? in_message_types_val : out_message_types_val, "Unknown packet type (0x%02x) ");
         if (col_info) {
             col_clear(pinfo->cinfo, COL_INFO);
-            col_add_str(pinfo->cinfo, COL_INFO, "%s ", rep);
+            col_add_fstr(pinfo->cinfo, COL_INFO,"%s ", rep);
         }
         if (tree) {
             ti = proto_tree_add_protocol_format(tree, proto_jnx_ouch, tvb, offset, -1, "SBI Japannext OUCH %s",

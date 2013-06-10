@@ -23,19 +23,19 @@
 #include <wsutil/type_util.h>
 
 static const value_string in_message_types_val[] = {
- { 'O', "Enter Order " },
- { 'U', "Replace Order " },
- { 'X', "Cancel Order " },
+ { 'O', "Enter Order" },
+ { 'U', "Replace Order" },
+ { 'X', "Cancel Order" },
  { 0, NULL }
 };
 
 static const value_string out_message_types_val[] = {
- { 'S', "System Event " },
- { 'A' , "Accepted " },
- { 'U' , "Replaced " },
- { 'C', "Canceled " },
- { 'E', "Executed " },
- { 'J', "Rejected " },
+ { 'S', "System Event" },
+ { 'A', "Accepted" },
+ { 'U', "Replaced" },
+ { 'C', "Canceled" },
+ { 'E', "Executed" },
+ { 'J', "Rejected" },
  { 0, NULL }
 };
 

@@ -164,7 +164,7 @@ order_token(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int of
 
       proto_tree_add_uint(jnx_ouch_tree, col, tvb, offset, 4, value);
       if (col_info) {
-          col_append_fstr(pinfo->cinfo, COL_INFO, "%u ", value);
+          col_append_fstr(pinfo->cinfo, COL_INFO, " %u", value);
       }
   }
   return offset + 4;
@@ -181,7 +181,7 @@ order_ref_number(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, i
 
       proto_tree_add_uint64(jnx_ouch_tree, col, tvb, offset, 8, value);
       if (col_info) {
-          col_append_fstr(pinfo->cinfo, COL_INFO, "%lu ", value);
+          col_append_fstr(pinfo->cinfo, COL_INFO, " %lu", value);
       }
   }
   return offset + 8;
@@ -198,7 +198,7 @@ match_number(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int o
 
       proto_tree_add_uint64(jnx_ouch_tree, col, tvb, offset, 8, value);
       if (col_info) {
-          col_append_fstr(pinfo->cinfo, COL_INFO, "%lu ", value);
+          col_append_fstr(pinfo->cinfo, COL_INFO, " %lu", value);
       }
   }
   return offset + 8;
@@ -227,7 +227,7 @@ number_of_shares(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, i
 
       proto_tree_add_uint(jnx_ouch_tree, id, tvb, offset, 4, value);
       if (col_info) {
-          col_append_fstr(pinfo->cinfo, COL_INFO, "%s %u ", qty, value);
+          col_append_fstr(pinfo->cinfo, COL_INFO, " %s %u", qty, value);
       }
   }
   return offset + 4;
@@ -244,7 +244,7 @@ price(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int id, int 
 
       proto_tree_add_double(jnx_ouch_tree, id, tvb, offset, 4, value);
       if (col_info) {
-          col_append_fstr(pinfo->cinfo, COL_INFO, "price %g ", value);
+          col_append_fstr(pinfo->cinfo, COL_INFO, " price %g", value);
       }
   }
   return offset + 4;
@@ -260,7 +260,7 @@ stock(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 
       proto_tree_add_uint(jnx_ouch_tree, hf_jnx_ouch_stock, tvb, offset, 4, stock_id);
       if (col_info) {
-          col_append_fstr(pinfo->cinfo, COL_INFO, "<%d> ", stock_id);
+          col_append_fstr(pinfo->cinfo, COL_INFO, " <%d>", stock_id);
       }
   }
   return offset + 4;
@@ -276,7 +276,7 @@ jnx_proto_tree_add_char(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_tree,
   proto_tree_add_string_format_value(jnx_tree, hf_field, tvb,
         offset, 1, vl, "%s (%s)", vl, val_to_str_const(*vl, v_str, "Unknown"));
   if ( pinfo != NULL && PINFO_COL(pinfo) ){
-        col_append_fstr(pinfo->cinfo, COL_INFO, "%s ", vl);
+        col_append_fstr(pinfo->cinfo, COL_INFO, " %s", vl);
   }
 
   return offset + 1;
@@ -498,7 +498,7 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
         const gchar *rep = val_to_str(jnx_ouch_type, soupbintcp_type == 'U' ? in_message_types_val : out_message_types_val, "Unknown packet type (0x%02x) ");
         if (col_info) {
             col_clear(pinfo->cinfo, COL_INFO);
-            col_add_fstr(pinfo->cinfo, COL_INFO,"%s ", rep);
+            col_add_str(pinfo->cinfo, COL_INFO, rep);
         }
         if (tree) {
             ti = proto_tree_add_protocol_format(tree, proto_jnx_ouch, tvb, offset, -1, "SBI Japannext OUCH %s",

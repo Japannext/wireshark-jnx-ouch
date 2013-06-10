@@ -268,16 +268,13 @@ stock(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 
 /* -------------------------- */
 static int
-jnx_proto_tree_add_char(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_tree, int hf_field, const value_string *v_str, int offset)
+proto_tree_add_char(proto_tree *jnx_tree, int hf_field, tvbuff_t *tvb, int offset, const value_string *v_str)
 {
   char *vl;
 
   vl = tvb_get_ephemeral_string(tvb, offset, 1);
   proto_tree_add_string_format_value(jnx_tree, hf_field, tvb,
         offset, 1, vl, "%s (%s)", vl, val_to_str_const(*vl, v_str, "Unknown"));
-  if ( pinfo != NULL && PINFO_COL(pinfo) ){
-        col_append_fstr(pinfo->cinfo, COL_INFO, " %s", vl);
-  }
 
   return offset + 1;
 }
@@ -294,7 +291,10 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_client_reference, tvb, offset, 10, ENC_ASCII|ENC_NA);
   offset += 10;
 
-  offset = jnx_proto_tree_add_char(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_buy_sell, buy_sell_val, offset);
+  if(PINFO_COL(pinfo)){
+      col_append_fstr(pinfo->cinfo, COL_INFO, " %c", tvb_get_guint8(tvb, offset));
+  }
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, buy_sell_val);
 
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, offset, "qty");
 
@@ -316,7 +316,7 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_display, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
-  offset = jnx_proto_tree_add_char(tvb, NULL, jnx_ouch_tree, hf_jnx_ouch_capacity, capacity_val, offset);
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_capacity, tvb, offset, capacity_val);
 
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, offset, "minqty");
 
@@ -368,7 +368,10 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_client_reference, tvb, offset, 10, ENC_ASCII|ENC_NA);
   offset += 10;
 
-  offset = jnx_proto_tree_add_char(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_buy_sell, buy_sell_val, offset);
+  if(PINFO_COL(pinfo)){
+      col_append_fstr(pinfo->cinfo, COL_INFO, " %c", tvb_get_guint8(tvb, offset));
+  }
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, buy_sell_val);
 
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, offset, "qty");
   offset = stock(tvb, pinfo, jnx_ouch_tree, offset);
@@ -389,12 +392,12 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_display, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
-  offset = jnx_proto_tree_add_char(tvb, NULL, jnx_ouch_tree, hf_jnx_ouch_capacity, capacity_val, offset);
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_capacity, tvb, offset, capacity_val);
 
   offset = order_ref_number(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_reference_number);
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, offset, "minqty");
 
-  offset = jnx_proto_tree_add_char(tvb, NULL, jnx_ouch_tree, hf_jnx_ouch_order_state, order_state_val, offset);
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_state, tvb, offset, order_state_val);
 
   return offset;
 }
@@ -407,7 +410,10 @@ replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_replacement_order_token);
 
-  offset = jnx_proto_tree_add_char(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_buy_sell, buy_sell_val, offset);
+  if(PINFO_COL(pinfo)){
+      col_append_fstr(pinfo->cinfo, COL_INFO, " %c", tvb_get_guint8(tvb, offset));
+  }
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, buy_sell_val);
 
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, offset, "qty");
   offset = stock(tvb, pinfo, jnx_ouch_tree, offset);
@@ -427,7 +433,7 @@ replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   offset = order_ref_number(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_reference_number);
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, offset, "minqty");
 
-  offset = jnx_proto_tree_add_char(tvb, NULL, jnx_ouch_tree, hf_jnx_ouch_order_state, order_state_val, offset);
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_state, tvb, offset, order_state_val);
 
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_previous_order_token);
 
@@ -441,7 +447,7 @@ canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_decrement_shares, offset, "qty");
 
-  offset = jnx_proto_tree_add_char(tvb, NULL, jnx_ouch_tree, hf_jnx_ouch_canceled_reason, canceled_order_reason_val, offset);
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_canceled_reason, tvb, offset, canceled_order_reason_val);
 
   return offset;
 }
@@ -454,7 +460,7 @@ executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_executed_shares, offset, "qty");
   offset = price(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_execution_price, offset);
 
-  offset = jnx_proto_tree_add_char(tvb, NULL, jnx_ouch_tree, hf_jnx_ouch_liquidity_flag, liquidity_flag_val, offset);
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_liquidity_flag, tvb, offset, liquidity_flag_val);
 
   offset = match_number(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_match_number);
 
@@ -467,7 +473,7 @@ rejected(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 {
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
 
-  offset = jnx_proto_tree_add_char(tvb, NULL, jnx_ouch_tree, hf_jnx_ouch_rejected_reason, rejected_order_reason_val, offset);
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_rejected_reason, tvb, offset, rejected_order_reason_val);
 
   return offset;
 }
@@ -508,12 +514,12 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
         }
     }
 
-    offset = jnx_proto_tree_add_char(tvb, NULL, jnx_ouch_tree, soupbintcp_type == 'U' ? hf_jnx_ouch_in_message_type : hf_jnx_ouch_out_message_type, soupbintcp_type == 'U' ? in_message_types_val : out_message_types_val, offset);
+    offset = proto_tree_add_char(jnx_ouch_tree, soupbintcp_type == 'U' ? hf_jnx_ouch_in_message_type : hf_jnx_ouch_out_message_type, tvb, offset, soupbintcp_type == 'U' ? in_message_types_val : out_message_types_val);
 
     switch (jnx_ouch_type) {
     case 'S': /* system event */
         offset = timestamp (tvb, jnx_ouch_tree, hf_jnx_ouch_timestamp, offset);
-        offset = jnx_proto_tree_add_char(tvb, NULL, jnx_ouch_tree, hf_jnx_ouch_system_event_code, system_event_code_val, offset);
+        offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_system_event_code, tvb, offset, system_event_code_val);
         break;
 
     case 'O':

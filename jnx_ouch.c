@@ -673,7 +673,7 @@ proto_register_jnx_ouch(void)
         "Number of shares", HFILL }},
 
     { &hf_jnx_ouch_minimum_quantity,
-      { "Shares",         "jnx_ouch.minimum_quantity",
+      { "Minimum quantity",         "jnx_ouch.minimum_quantity",
         FT_UINT32, BASE_DEC,  NULL, 0x0,
         "Minimum acceptable quantity to execute", HFILL }},
 

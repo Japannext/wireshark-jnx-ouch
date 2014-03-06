@@ -75,6 +75,7 @@ static const value_string canceled_order_reason_val[] = {
  { 'N', "Invalid minimum quantity" },
  { 'Y', "Invalid order type" },
  { 'V', "Exceeded order value limit" },
+ { 'M', "Order expired during match" },
  { 'i', "Short sell order restriction" },
  { 'O', "Other" },
  { 0, NULL }

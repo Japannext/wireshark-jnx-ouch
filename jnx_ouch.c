@@ -34,6 +34,7 @@ static const value_string out_message_types_val[] = {
  { 'A', "Accepted" },
  { 'U', "Replaced" },
  { 'C', "Canceled" },
+ { 'D', "AIQ Canceled" },
  { 'E', "Executed" },
  { 'J', "Rejected" },
  { 0, NULL }
@@ -135,6 +136,7 @@ static int hf_jnx_ouch_order_reference_number = -1;
 static int hf_jnx_ouch_buy_sell = -1;
 static int hf_jnx_ouch_shares = -1;
 static int hf_jnx_ouch_decrement_shares = -1;
+static int hf_jnx_ouch_shares_prevented_from_trading = -1;
 static int hf_jnx_ouch_executed_shares = -1;
 static int hf_jnx_ouch_price = -1;
 static int hf_jnx_ouch_execution_price = -1;
@@ -457,6 +459,19 @@ canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 
 /* -------------------------- */
 static int
+aiq_canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
+{
+  offset = canceled(tvb, pinfo, jnx_ouch_tree, offset);
+
+  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares_prevented_from_trading, offset, "qty");
+  offset = price(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_execution_price, offset);
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_liquidity_flag, tvb, offset, liquidity_flag_val);
+
+  return offset;
+}
+
+/* -------------------------- */
+static int
 executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
@@ -550,6 +565,11 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
     case 'C':
         offset = timestamp (tvb, jnx_ouch_tree, hf_jnx_ouch_timestamp, offset);
         offset = canceled(tvb, pinfo, jnx_ouch_tree, offset);
+        break;
+
+    case 'D':
+        offset = timestamp (tvb, jnx_ouch_tree, hf_jnx_ouch_timestamp, offset);
+        offset = aiq_canceled(tvb, pinfo, jnx_ouch_tree, offset);
         break;
 
     case 'E' : /* Order executed */
@@ -699,6 +719,11 @@ proto_register_jnx_ouch(void)
       { "Decrement Shares",         "jnx_ouch.decrement_shares",
         FT_UINT32, BASE_DEC,  NULL, 0x0,
         "Number of shares decremented from the order", HFILL }},
+
+    { &hf_jnx_ouch_shares_prevented_from_trading,
+      { "Shares Prevented from Trading",         "jnx_ouch.shares_prevented_from_trading",
+        FT_UINT32, BASE_DEC,  NULL, 0x0,
+        "Shares that would have executed if the trade had occurred", HFILL }},
 
     { &hf_jnx_ouch_order_state,
       { "Order State",         "jnx_ouch.order_state",

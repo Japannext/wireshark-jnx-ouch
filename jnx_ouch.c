@@ -36,6 +36,7 @@ static const value_string out_message_types_val[] = {
  { 'C', "Canceled" },
  { 'D', "AIQ Canceled" },
  { 'E', "Executed" },
+ { 'e', "Executed with Counter Party" },
  { 'J', "Rejected" },
  { 0, NULL }
 };
@@ -149,6 +150,7 @@ static int hf_jnx_ouch_capacity = -1;
 static int hf_jnx_ouch_minimum_quantity = -1;
 static int hf_jnx_ouch_order_state = -1;
 static int hf_jnx_ouch_liquidity_flag = -1;
+static int hf_jnx_ouch_counter_party = -1;
 static int hf_jnx_ouch_match_number = -1;
 
 static int hf_jnx_ouch_message = -1;
@@ -458,6 +460,24 @@ executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 
 /* -------------------------- */
 static int
+executed_with_counter_party(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
+{
+  offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
+  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_executed_shares, offset, "qty");
+  offset = price(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_execution_price, offset);
+
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_liquidity_flag, tvb, offset, liquidity_flag_val);
+
+  proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_counter_party, tvb, offset, 12, ENC_ASCII|ENC_NA);
+  offset += 12;
+
+  offset = match_number(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_match_number);
+
+  return offset;
+}
+
+/* -------------------------- */
+static int
 rejected(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
@@ -541,6 +561,11 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
     case 'E' : /* Order executed */
         offset = timestamp (tvb, jnx_ouch_tree, hf_jnx_ouch_timestamp, offset);
         offset = executed(tvb, pinfo, jnx_ouch_tree, offset);
+        break;
+
+    case 'e' : /* Order executed with counter party*/
+        offset = timestamp (tvb, jnx_ouch_tree, hf_jnx_ouch_timestamp, offset);
+        offset = executed_with_counter_party(tvb, pinfo, jnx_ouch_tree, offset);
         break;
 
     case 'J' :
@@ -723,6 +748,11 @@ proto_register_jnx_ouch(void)
 
     { &hf_jnx_ouch_liquidity_flag,
       { "Liquidity Flag",         "jnx_ouch.liquidity_flag",
+        FT_STRING, BASE_NONE, NULL, 0x0,
+        NULL, HFILL }},
+
+    { &hf_jnx_ouch_counter_party,
+      { "Counter Party",         "jnx_ouch.counter_party",
         FT_STRING, BASE_NONE, NULL, 0x0,
         NULL, HFILL }},
 

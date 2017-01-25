@@ -77,6 +77,7 @@ static const value_string canceled_order_reason_val[] = {
  { 'Y', "Invalid order type" },
  { 'V', "Exceeded order value limit" },
  { 'M', "Order expired during match" },
+ { 'F', "Flow control is enabled and this OUCH port is being throttled" },
  { 'i', "Short sell order restriction" },
  { 'O', "Other" },
  { 0, NULL }
@@ -93,6 +94,7 @@ static const value_string rejected_order_reason_val[] = {
  { 'Y', "Invalid order type" },
  { 'V', "Exceeded order value limit" },
  { 'L', "MPID not allowed for this port" },
+ { 'F', "Flow control is enabled and this OUCH port is being throttled" },
  { 'c', "No access" },
  { 'i', "Short sell order restriction" },
  { 'O', "Other" },

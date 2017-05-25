@@ -790,6 +790,6 @@ proto_register_jnx_ouch(void)
 void
 proto_reg_handoff_jnx_ouch(void)
 {
-    jnx_ouch_handle = new_create_dissector_handle(dissect_jnx_ouch, proto_jnx_ouch);
+    jnx_ouch_handle = create_dissector_handle(dissect_jnx_ouch, proto_jnx_ouch);
     dissector_add_for_decode_as("soupbintcp.port", jnx_ouch_handle); /* for "decode-as" */
 }

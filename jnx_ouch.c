@@ -491,10 +491,6 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
 
     col_set_str(pinfo->cinfo, COL_PROTOCOL, "SBI Japannext OUCH");
 
-    if (data == NULL) {
-        return 0;
-    }
-
     jnx_ouch_type = tvb_get_guint8(tvb, offset);
     reported_len = tvb_reported_length(tvb);
 
@@ -590,6 +586,95 @@ static void jnx_ouch_prefs(void)
     g_free(soupbintcp_port_range);
     soupbintcp_port_range = range_copy(global_soupbintcp_port_range);
     range_foreach(soupbintcp_port_range, range_add_soupbintcp_port_callback);
+}
+
+/** Returns a guess if a packet is OUCH or not
+ *
+ * Since SOUP doesn't have a sub-protocol type flag, we have to use a
+ * heuristic decision to determine if the contained protocol is OUCH
+ * or ITCH (or something else entirely).  We look at the message type
+ * code, and since we know that we're being called from SOUP, we can
+ * check the passed-in length too: if the type code and the length
+ * match, we guess at OUCH. */
+static gboolean
+dissect_jnx_ouch_heur(
+    tvbuff_t *tvb,
+    packet_info *pinfo,
+    proto_tree *tree,
+    void *data _U_)
+{
+    guint8 msg_type = tvb_get_guint8(tvb, 0);
+    guint msg_len = tvb_reported_length(tvb);
+
+    switch (msg_type) {
+    case 'O': /* Enter order */
+        if (msg_len != 46) {
+            return FALSE;
+        }
+        break;
+
+    case 'U': /* Replace order or Replaced */
+        if (msg_len != 26 && msg_len != 52) {
+            return FALSE;
+        }
+        break;
+
+    case 'X': /* Cancel order */
+        if (msg_len != 9) {
+            return FALSE;
+        }
+        break;
+
+    case 'S': /* System event */
+        if (msg_len != 10) {
+            return FALSE;
+        }
+        break;
+
+    case 'A': /* Accepted */
+        if (msg_len != 63 ) {
+            return FALSE;
+        }
+        break;
+
+    case 'C': /* Canceled */
+        if (msg_len != 18) {
+            return FALSE;
+        }
+        break;
+
+    case 'D': /* AIQ Canceled */
+        if (msg_len != 27) {
+            return FALSE;
+        }
+        break;
+    case 'E': /* Executed */
+        if (msg_len != 30) {
+            return FALSE;
+        }
+        break;
+
+    case 'e': /* Executed with counter party*/
+        if (msg_len != 42) {
+            return FALSE;
+        }
+        break;
+
+    case 'J': /* Rejected */
+        if (msg_len != 14) {
+            return FALSE;
+        }
+        break;
+
+    default:
+        /* Not a known OUCH message code */
+        return FALSE;
+    }
+
+    /* Perform dissection of this (initial) packet */
+    dissect_jnx_ouch(tvb, pinfo, tree, NULL);
+
+    return TRUE;
 }
 
 void
@@ -778,5 +863,5 @@ void
 proto_reg_handoff_jnx_ouch(void)
 {
     jnx_ouch_handle = create_dissector_handle(dissect_jnx_ouch, proto_jnx_ouch);
-    dissector_add_for_decode_as("tcp.port", jnx_ouch_handle); /* for "decode-as" */
+    heur_dissector_add("soupbintcp", dissect_jnx_ouch_heur, "OUCH over SoupBinTCP", "jnx_ouch_soupbintcp", proto_jnx_ouch, HEURISTIC_ENABLE);
 }

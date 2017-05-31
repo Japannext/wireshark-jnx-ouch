@@ -583,11 +583,11 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
 /* Register the protocol with Wireshark */
 
 static void range_delete_soupbintcp_port_callback(guint32 port) {
-    dissector_delete_uint("soupbintcp.port", port, jnx_ouch_handle);
+    dissector_delete_uint("tcp.port", port, jnx_ouch_handle);
 }
 
 static void range_add_soupbintcp_port_callback(guint32 port) {
-    dissector_add_uint("soupbintcp.port", port, jnx_ouch_handle);
+    dissector_add_uint("tcp.port", port, jnx_ouch_handle);
 }
 
 static void jnx_ouch_prefs(void)
@@ -776,7 +776,7 @@ proto_register_jnx_ouch(void)
 
     jnx_ouch_module = prefs_register_protocol(proto_jnx_ouch, jnx_ouch_prefs);
 
-    prefs_register_range_preference(jnx_ouch_module, "soupbintcp.port", "SoupBinTCP ports", "SoupBinTCP port range", &global_soupbintcp_port_range, 65535);
+    prefs_register_range_preference(jnx_ouch_module, "tcp.port", "SoupBinTCP ports", "SoupBinTCP port range", &global_soupbintcp_port_range, 65535);
     soupbintcp_port_range = range_empty();
 
 }
@@ -789,5 +789,5 @@ void
 proto_reg_handoff_jnx_ouch(void)
 {
     jnx_ouch_handle = create_dissector_handle(dissect_jnx_ouch, proto_jnx_ouch);
-    dissector_add_for_decode_as("soupbintcp.port", jnx_ouch_handle); /* for "decode-as" */
+    dissector_add_for_decode_as("tcp.port", jnx_ouch_handle); /* for "decode-as" */
 }

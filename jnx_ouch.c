@@ -20,17 +20,12 @@
 #include <epan/prefs.h>
 #include <wsutil/type_util.h>
 
-static const value_string in_message_types_val[] = {
+static const value_string message_types_val[] = {
  { 'O', "Enter Order" },
- { 'U', "Replace Order" },
+ { 'U', "Replace(d) Order" },
  { 'X', "Cancel Order" },
- { 0, NULL }
-};
-
-static const value_string out_message_types_val[] = {
  { 'S', "System Event" },
  { 'A', "Accepted" },
- { 'U', "Replaced" },
  { 'C', "Canceled" },
  { 'D', "AIQ Canceled" },
  { 'E', "Executed" },
@@ -120,8 +115,7 @@ static dissector_handle_t jnx_ouch_handle;
 /* Initialize the subtree pointers */
 static gint ett_jnx_ouch = -1;
 
-static int hf_jnx_ouch_in_message_type = -1;
-static int hf_jnx_ouch_out_message_type = -1;
+static int hf_jnx_ouch_message_type = -1;
 static int hf_jnx_ouch_group = -1;
 static int hf_jnx_ouch_stock = -1;
 static int hf_jnx_ouch_timestamp = -1;
@@ -489,8 +483,8 @@ rejected(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 static int
 dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data)
 {
-    guint8 soupbintcp_type = 0;
     guint8 jnx_ouch_type;
+    guint16 reported_len;
     proto_item *ti;
     proto_tree *jnx_ouch_tree = NULL;
     int  offset = 0;
@@ -501,11 +495,11 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
         return 0;
     }
 
-    soupbintcp_type = *(guint8*)data;
     jnx_ouch_type = tvb_get_guint8(tvb, offset);
+    reported_len = tvb_reported_length(tvb);
 
     if (tree) {
-        const gchar *rep = val_to_str(jnx_ouch_type, soupbintcp_type == 'U' ? in_message_types_val : out_message_types_val, "Unknown packet type (0x%02x) ");
+        const gchar *rep = val_to_str(jnx_ouch_type, message_types_val, "Unknown packet type (0x%02x) ");
         col_clear(pinfo->cinfo, COL_INFO);
         col_add_str(pinfo->cinfo, COL_INFO, rep);
         if (tree) {
@@ -516,7 +510,7 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
         }
     }
 
-    offset = proto_tree_add_char(jnx_ouch_tree, soupbintcp_type == 'U' ? hf_jnx_ouch_in_message_type : hf_jnx_ouch_out_message_type, tvb, offset, soupbintcp_type == 'U' ? in_message_types_val : out_message_types_val);
+    offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_message_type, tvb, offset, message_types_val);
 
     switch (jnx_ouch_type) {
     case 'S': /* system event */
@@ -529,7 +523,7 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
        break;
 
     case 'U':
-        if (soupbintcp_type == 'U') {
+        if (reported_len == 26) {
             offset = replace(tvb, pinfo, jnx_ouch_tree, offset);
         } else {
             offset = timestamp (tvb, jnx_ouch_tree, hf_jnx_ouch_timestamp, offset);
@@ -604,12 +598,7 @@ proto_register_jnx_ouch(void)
 
 /* Setup list of header fields  See Section 1.6.1 for details*/
     static hf_register_info hf[] = {
-    { &hf_jnx_ouch_in_message_type,
-      { "Message Type",         "jnx_ouch.message_type",
-        FT_STRING, BASE_NONE, NULL, 0x0,
-        NULL, HFILL }},
-
-    { &hf_jnx_ouch_out_message_type,
+    { &hf_jnx_ouch_message_type,
       { "Message Type",         "jnx_ouch.message_type",
         FT_STRING, BASE_NONE, NULL, 0x0,
         NULL, HFILL }},

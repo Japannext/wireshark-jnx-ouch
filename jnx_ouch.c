@@ -22,10 +22,11 @@
 
 static const value_string message_types_val[] = {
  { 'O', "Enter Order" },
- { 'U', "Replace(d) Order" },
+ { 'U', "Replace Order" },
  { 'X', "Cancel Order" },
  { 'S', "System Event" },
  { 'A', "Accepted" },
+ { 'R', "Replaced" }, /* 'U' on the wire, but use 'R' to disambiguate */
  { 'C', "Canceled" },
  { 'D', "AIQ Canceled" },
  { 'E', "Executed" },
@@ -494,6 +495,10 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
     jnx_ouch_type = tvb_get_guint8(tvb, offset);
     reported_len = tvb_reported_length(tvb);
 
+    if (jnx_ouch_type == 'U' && reported_len == 52) {
+        jnx_ouch_type = 'R';
+    }
+
     if (tree) {
         const gchar *rep = val_to_str(jnx_ouch_type, message_types_val, "Unknown packet type (0x%02x) ");
         col_clear(pinfo->cinfo, COL_INFO);
@@ -519,12 +524,7 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
        break;
 
     case 'U':
-        if (reported_len == 26) {
-            offset = replace(tvb, pinfo, jnx_ouch_tree, offset);
-        } else {
-            offset = timestamp (tvb, jnx_ouch_tree, hf_jnx_ouch_timestamp, offset);
-            offset = replaced(tvb, pinfo, jnx_ouch_tree, offset);
-        }
+        offset = replace(tvb, pinfo, jnx_ouch_tree, offset);
         break;
 
     case 'X':
@@ -534,6 +534,11 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
     case 'A':
         offset = timestamp (tvb, jnx_ouch_tree, hf_jnx_ouch_timestamp, offset);
         offset = accepted(tvb, pinfo, jnx_ouch_tree, offset);
+        break;
+
+    case 'R': /* Replaced */
+        offset = timestamp (tvb, jnx_ouch_tree, hf_jnx_ouch_timestamp, offset);
+        offset = replaced(tvb, pinfo, jnx_ouch_tree, offset);
         break;
 
     case 'C':

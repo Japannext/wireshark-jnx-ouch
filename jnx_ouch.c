@@ -20,6 +20,20 @@
 #include <epan/prefs.h>
 #include <wsutil/type_util.h>
 
+#define ENTER_ORDER_MSG_LEN 46
+#define ENTER_ORDER_WITH_ORDER_CLASSIFICATION_MSG_LEN 47
+#define REPLACE_ORDER_MSG_LEN 26
+#define CANCEL_ORDER_MSG_LEN 9
+#define SYSTEM_EVENT_MSG_LEN 10
+#define ORDER_ACCEPTED_MSG_LEN 63
+#define ORDER_ACCEPTED_WITH_ORDER_CLASSIFICATION_MSG_LEN 64
+#define ORDER_REPLACED_MSG_LEN 52
+#define ORDER_CANCELED_MSG_LEN 18
+#define ORDER_AIQ_CANCELED_MSG_LEN 27
+#define ORDER_EXECUTED_MSG_LEN 30
+#define ORDER_EXECUTED_WITH_COUNTER_PARTY_MSG_LEN 42
+#define ORDER_REJECTED_MSG_LEN 14
+
 static const value_string message_types_val[] = {
  { 'O', "Enter Order" },
  { 'U', "Replace Order" },
@@ -307,7 +321,7 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, offset, "minqty");
 
-  if (reported_len == 47)
+  if (reported_len == ENTER_ORDER_WITH_ORDER_CLASSIFICATION_MSG_LEN)
     offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
 
   return offset;
@@ -390,7 +404,7 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_state, tvb, offset, order_state_val);
 
-  if (reported_len == 64)
+  if (reported_len == ORDER_ACCEPTED_WITH_ORDER_CLASSIFICATION_MSG_LEN)
     offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
 
   return offset;
@@ -634,60 +648,60 @@ dissect_jnx_ouch_heur(
 
     switch (msg_type) {
     case 'O': /* Enter order */
-        if (msg_len != 46 && msg_len != 47) {
+        if (msg_len != ENTER_ORDER_MSG_LEN && msg_len != ENTER_ORDER_WITH_ORDER_CLASSIFICATION_MSG_LEN) {
             return FALSE;
         }
         break;
 
     case 'U': /* Replace order or Replaced */
-        if (msg_len != 26 && msg_len != 52) {
+        if (msg_len != REPLACE_ORDER_MSG_LEN && msg_len != ORDER_REPLACED_MSG_LEN) {
             return FALSE;
         }
         break;
 
     case 'X': /* Cancel order */
-        if (msg_len != 9) {
+        if (msg_len != CANCEL_ORDER_MSG_LEN) {
             return FALSE;
         }
         break;
 
     case 'S': /* System event */
-        if (msg_len != 10) {
+        if (msg_len != SYSTEM_EVENT_MSG_LEN) {
             return FALSE;
         }
         break;
 
     case 'A': /* Accepted */
-        if (msg_len != 63 && msg_len != 64) {
+        if (msg_len != ORDER_ACCEPTED_MSG_LEN && msg_len != ORDER_ACCEPTED_WITH_ORDER_CLASSIFICATION_MSG_LEN) {
             return FALSE;
         }
         break;
 
     case 'C': /* Canceled */
-        if (msg_len != 18) {
+        if (msg_len != ORDER_CANCELED_MSG_LEN) {
             return FALSE;
         }
         break;
 
     case 'D': /* AIQ Canceled */
-        if (msg_len != 27) {
+        if (msg_len != ORDER_AIQ_CANCELED_MSG_LEN) {
             return FALSE;
         }
         break;
     case 'E': /* Executed */
-        if (msg_len != 30) {
+        if (msg_len != ORDER_EXECUTED_MSG_LEN) {
             return FALSE;
         }
         break;
 
     case 'e': /* Executed with counter party*/
-        if (msg_len != 42) {
+        if (msg_len != ORDER_EXECUTED_WITH_COUNTER_PARTY_MSG_LEN) {
             return FALSE;
         }
         break;
 
     case 'J': /* Rejected */
-        if (msg_len != 14) {
+        if (msg_len != ORDER_REJECTED_MSG_LEN) {
             return FALSE;
         }
         break;

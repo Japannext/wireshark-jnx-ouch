@@ -109,6 +109,15 @@ static const value_string buy_sell_val[] = {
  { 0, NULL}
 };
 
+static const value_string order_classification_val[] = {
+ { '1', "Non HFT" },
+ { '3', "HFT market making strategy" },
+ { '4', "HFT arbitrage strategy" },
+ { '5', "HFT directional strategy" },
+ { '6', "HFT other strategy" },
+ { 0, NULL}
+};
+
 /* Initialize the protocol and registered fields */
 static int proto_jnx_ouch = -1;
 static dissector_handle_t jnx_ouch_handle;
@@ -145,6 +154,7 @@ static int hf_jnx_ouch_order_state = -1;
 static int hf_jnx_ouch_liquidity_flag = -1;
 static int hf_jnx_ouch_counter_party = -1;
 static int hf_jnx_ouch_match_number = -1;
+static int hf_jnx_ouch_order_classification = -1;
 
 static int hf_jnx_ouch_message = -1;
 
@@ -262,7 +272,9 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
   guint32 time_in_force;
   guint32 firm;
+  guint16 reported_len;
 
+  reported_len = tvb_reported_length(tvb);
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
 
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_client_reference, tvb, offset, 10, ENC_ASCII|ENC_NA);
@@ -294,6 +306,9 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_capacity, tvb, offset, capacity_val);
 
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, offset, "minqty");
+
+  if (reported_len == 47)
+    offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
 
   return offset;
 }
@@ -337,6 +352,9 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 {
   guint32 time_in_force;
   guint32 firm;
+  guint16 reported_len;
+
+  reported_len = tvb_reported_length(tvb);
 
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
 
@@ -371,6 +389,9 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, offset, "minqty");
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_state, tvb, offset, order_state_val);
+
+  if (reported_len == 64)
+    offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
 
   return offset;
 }
@@ -613,7 +634,7 @@ dissect_jnx_ouch_heur(
 
     switch (msg_type) {
     case 'O': /* Enter order */
-        if (msg_len != 46) {
+        if (msg_len != 46 && msg_len != 47) {
             return FALSE;
         }
         break;
@@ -637,7 +658,7 @@ dissect_jnx_ouch_heur(
         break;
 
     case 'A': /* Accepted */
-        if (msg_len != 63 ) {
+        if (msg_len != 63 && msg_len != 64) {
             return FALSE;
         }
         break;
@@ -836,7 +857,13 @@ proto_register_jnx_ouch(void)
     { &hf_jnx_ouch_message,
       { "Message",         "jnx_ouch.message",
         FT_STRING, BASE_NONE, NULL, 0x0,
-        NULL, HFILL }}
+        NULL, HFILL }},
+
+    { &hf_jnx_ouch_order_classification,
+      { "Order Classification",         "jnx_ouch.order_classification",
+        FT_STRING, BASE_NONE, NULL, 0x0,
+        "High Frequency Trading (HFT) order classification", HFILL }}
+
     };
 
 /* Setup protocol subtree array */

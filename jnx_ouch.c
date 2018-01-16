@@ -647,60 +647,60 @@ dissect_jnx_ouch_heur(
     guint msg_len = tvb_reported_length(tvb);
 
     switch (msg_type) {
-    case 'O': /* Enter order */
+    case 'O':
         if (msg_len != ENTER_ORDER_MSG_LEN && msg_len != ENTER_ORDER_WITH_ORDER_CLASSIFICATION_MSG_LEN) {
             return FALSE;
         }
         break;
 
-    case 'U': /* Replace order or Replaced */
+    case 'U':
         if (msg_len != REPLACE_ORDER_MSG_LEN && msg_len != ORDER_REPLACED_MSG_LEN) {
             return FALSE;
         }
         break;
 
-    case 'X': /* Cancel order */
+    case 'X':
         if (msg_len != CANCEL_ORDER_MSG_LEN) {
             return FALSE;
         }
         break;
 
-    case 'S': /* System event */
+    case 'S':
         if (msg_len != SYSTEM_EVENT_MSG_LEN) {
             return FALSE;
         }
         break;
 
-    case 'A': /* Accepted */
+    case 'A':
         if (msg_len != ORDER_ACCEPTED_MSG_LEN && msg_len != ORDER_ACCEPTED_WITH_ORDER_CLASSIFICATION_MSG_LEN) {
             return FALSE;
         }
         break;
 
-    case 'C': /* Canceled */
+    case 'C':
         if (msg_len != ORDER_CANCELED_MSG_LEN) {
             return FALSE;
         }
         break;
 
-    case 'D': /* AIQ Canceled */
+    case 'D':
         if (msg_len != ORDER_AIQ_CANCELED_MSG_LEN) {
             return FALSE;
         }
         break;
-    case 'E': /* Executed */
+    case 'E':
         if (msg_len != ORDER_EXECUTED_MSG_LEN) {
             return FALSE;
         }
         break;
 
-    case 'e': /* Executed with counter party*/
+    case 'e':
         if (msg_len != ORDER_EXECUTED_WITH_COUNTER_PARTY_MSG_LEN) {
             return FALSE;
         }
         break;
 
-    case 'J': /* Rejected */
+    case 'J':
         if (msg_len != ORDER_REJECTED_MSG_LEN) {
             return FALSE;
         }

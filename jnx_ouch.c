@@ -87,38 +87,38 @@ static const value_string liquidity_flag_val[] = {
 };
 
 static const value_string canceled_order_reason_val[] = {
- { 'U', "User request" },
- { 'I', "Immediate order" },
- { 'S', "Supervisory cancel" },
- { 'D', "Invalid display type" },
+ { 'U', "User requested the order to be canceled" },
  { 'L', "User logged off" },
- { 'Z', "Invalid quantity" },
- { 'R', "Order not allowed at this time" },
+ { 'S', "This order was manually canceled by a supervisory terminal" },
+ { 'I', "Order with 'Immediate' Time In Force was canceled " },
+ { 'M', "Order expired during match" },
  { 'X', "Invalid price" },
+ { 'Z', "Invalid quantity" },
  { 'N', "Invalid minimum quantity" },
  { 'Y', "Invalid order type" },
+ { 'D', "Invalid display type" },
  { 'V', "Exceeded order value limit" },
- { 'M', "Order expired during match" },
- { 'F', "Flow control is enabled and this OUCH port is being throttled" },
  { 'i', "Short sell order restriction" },
+ { 'R', "Order not allowed at this time" },
+ { 'F', "Flow control is enabled and this OUCH port is being throttled" },
  { 'O', "Other" },
  { 0, NULL }
 };
 
 static const value_string rejected_order_reason_val[] = {
  { 'H', "Trading halt" },
- { 'Z', "Invalid quantity" },
- { 'S', "Invalid security identifier" },
- { 'D', "Invalid display type" },
- { 'R', "Order not allowed at this time" },
+ { 'S', "Invalid orderbook identifier" },
  { 'X', "Invalid price" },
+ { 'Z', "Invalid quantity" },
  { 'N', "Invalid minimum quantity" },
  { 'Y', "Invalid order type" },
+ { 'D', "Invalid display type" },
  { 'V', "Exceeded order value limit" },
- { 'L', "MPID not allowed for this port" },
- { 'F', "Flow control is enabled and this OUCH port is being throttled" },
- { 'c', "No access" },
  { 'i', "Short sell order restriction" },
+ { 'R', "Order not allowed at this time" },
+ { 'F', "Flow control is enabled and this OUCH port is being throttled" },
+ { 'L', "MPID not allowed for this port" },
+ { 'c', "User does not have permission to enter an order on the given board" },
  { 'O', "Other" },
  { 0, NULL }
 };

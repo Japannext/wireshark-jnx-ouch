@@ -92,7 +92,7 @@ static const value_string canceled_order_reason_val[] = {
  { 'S', "Supervisory cancel" },
  { 'D', "Invalid display type" },
  { 'L', "User logged off" },
- { 'Z', "Invalid shares" },
+ { 'Z', "Invalid quantity" },
  { 'R', "Order not allowed at this time" },
  { 'X', "Invalid price" },
  { 'N', "Invalid minimum quantity" },
@@ -107,7 +107,7 @@ static const value_string canceled_order_reason_val[] = {
 
 static const value_string rejected_order_reason_val[] = {
  { 'H', "Trading halt" },
- { 'Z', "Invalid shares" },
+ { 'Z', "Invalid quantity" },
  { 'S', "Invalid security identifier" },
  { 'D', "Invalid display type" },
  { 'R', "Order not allowed at this time" },
@@ -166,14 +166,14 @@ static int hf_jnx_ouch_previous_order_token = -1;
 static int hf_jnx_ouch_client_reference = -1;
 static int hf_jnx_ouch_order_reference_number = -1;
 static int hf_jnx_ouch_buy_sell = -1;
-static int hf_jnx_ouch_shares = -1;
-static int hf_jnx_ouch_shares_64 = -1;
-static int hf_jnx_ouch_decrement_shares = -1;
-static int hf_jnx_ouch_decrement_shares_64 = -1;
-static int hf_jnx_ouch_shares_prevented_from_trading = -1;
-static int hf_jnx_ouch_shares_prevented_from_trading_64 = -1;
-static int hf_jnx_ouch_executed_shares = -1;
-static int hf_jnx_ouch_executed_shares_64 = -1;
+static int hf_jnx_ouch_quantity = -1;
+static int hf_jnx_ouch_quantity_64 = -1;
+static int hf_jnx_ouch_decrement_quantity = -1;
+static int hf_jnx_ouch_decrement_quantity_64 = -1;
+static int hf_jnx_ouch_quantity_prevented_from_trading = -1;
+static int hf_jnx_ouch_quantity_prevented_from_trading_64 = -1;
+static int hf_jnx_ouch_executed_quantity = -1;
+static int hf_jnx_ouch_executed_quantity_64 = -1;
 static int hf_jnx_ouch_price = -1;
 static int hf_jnx_ouch_execution_price = -1;
 static int hf_jnx_ouch_time_in_force = -1;
@@ -313,7 +313,7 @@ timestamp(tvbuff_t *tvb, proto_tree *jnx_ouch_tree, int id, int offset)
 
 /* -------------------------- */
 static int
-number_of_shares(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int id, int id_64, int offset, const char* qty)
+quantity(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int id, int id_64, int offset, const char* qty)
 {
     if (jnx_ouch_tree) {
         if (detect_64bit_message(tvb)) {
@@ -390,7 +390,7 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
   col_append_fstr(pinfo->cinfo, COL_INFO, " %c", tvb_get_guint8(tvb, offset));
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, buy_sell_val);
 
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, hf_jnx_ouch_shares_64, offset, "qty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_quantity, hf_jnx_ouch_quantity_64, offset, "qty");
 
   offset = stock(tvb, pinfo, jnx_ouch_tree, offset);
 
@@ -412,7 +412,7 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_capacity, tvb, offset, capacity_val);
 
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, hf_jnx_ouch_minimum_quantity_64, offset, "minqty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, hf_jnx_ouch_minimum_quantity_64, offset, "minqty");
 
   if (reported_len == ENTER_ORDER_WITH_ORDER_CLASSIFICATION_MSG_LEN)
     offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
@@ -428,7 +428,7 @@ replace(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset
 
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_existing_order_token);
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_replacement_order_token);
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, hf_jnx_ouch_shares_64, offset, "qty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_quantity, hf_jnx_ouch_quantity_64, offset, "qty");
   offset = price(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_price, offset);
 
   time_in_force = tvb_get_ntohl(tvb, offset);
@@ -438,7 +438,7 @@ replace(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_display, tvb, offset, 1, ENC_ASCII|ENC_NA);
   offset += 1;
 
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, hf_jnx_ouch_minimum_quantity_64, offset, "minqty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, hf_jnx_ouch_minimum_quantity_64, offset, "minqty");
 
   return offset;
 }
@@ -448,7 +448,7 @@ static int
 cancel(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, hf_jnx_ouch_shares_64, offset, "qty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_quantity, hf_jnx_ouch_quantity_64, offset, "qty");
 
   return offset;
 }
@@ -471,7 +471,7 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   col_append_fstr(pinfo->cinfo, COL_INFO, " %c", tvb_get_guint8(tvb, offset));
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, buy_sell_val);
 
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, hf_jnx_ouch_shares_64, offset, "qty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_quantity, hf_jnx_ouch_quantity_64, offset, "qty");
   offset = stock(tvb, pinfo, jnx_ouch_tree, offset);
 
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_group, tvb, offset, 4, ENC_ASCII|ENC_NA);
@@ -493,7 +493,7 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_capacity, tvb, offset, capacity_val);
 
   offset = order_ref_number(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_reference_number);
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, hf_jnx_ouch_minimum_quantity_64, offset, "minqty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, hf_jnx_ouch_minimum_quantity_64, offset, "minqty");
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_state, tvb, offset, order_state_val);
 
@@ -514,7 +514,7 @@ replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   col_append_fstr(pinfo->cinfo, COL_INFO, " %c", tvb_get_guint8(tvb, offset));
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, buy_sell_val);
 
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares, hf_jnx_ouch_shares_64, offset, "qty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_quantity, hf_jnx_ouch_quantity_64, offset, "qty");
   offset = stock(tvb, pinfo, jnx_ouch_tree, offset);
 
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_group, tvb, offset, 4, ENC_ASCII|ENC_NA);
@@ -530,7 +530,7 @@ replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   offset += 1;
 
   offset = order_ref_number(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_reference_number);
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, hf_jnx_ouch_minimum_quantity_64, offset, "minqty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, hf_jnx_ouch_minimum_quantity_64, offset, "minqty");
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_state, tvb, offset, order_state_val);
 
@@ -544,7 +544,7 @@ static int
 canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_decrement_shares, hf_jnx_ouch_decrement_shares_64, offset, "qty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_decrement_quantity, hf_jnx_ouch_decrement_quantity_64, offset, "qty");
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_canceled_reason, tvb, offset, canceled_order_reason_val);
 
@@ -557,7 +557,7 @@ aiq_canceled(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int o
 {
   offset = canceled(tvb, pinfo, jnx_ouch_tree, offset);
 
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_shares_prevented_from_trading, hf_jnx_ouch_shares_prevented_from_trading_64, offset, "qty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_quantity_prevented_from_trading, hf_jnx_ouch_quantity_prevented_from_trading_64, offset, "qty");
   offset = price(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_execution_price, offset);
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_liquidity_flag, tvb, offset, liquidity_flag_val);
 
@@ -569,7 +569,7 @@ static int
 executed(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_executed_shares, hf_jnx_ouch_executed_shares_64, offset, "qty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_executed_quantity, hf_jnx_ouch_executed_quantity_64, offset, "qty");
   offset = price(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_execution_price, offset);
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_liquidity_flag, tvb, offset, liquidity_flag_val);
@@ -584,7 +584,7 @@ static int
 executed_with_counter_party(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
-  offset = number_of_shares(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_executed_shares, hf_jnx_ouch_executed_shares_64, offset, "qty");
+  offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_executed_quantity, hf_jnx_ouch_executed_quantity_64, offset, "qty");
   offset = price(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_execution_price, offset);
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_liquidity_flag, tvb, offset, liquidity_flag_val);
@@ -821,15 +821,15 @@ proto_register_jnx_ouch(void)
         FT_STRING, BASE_NONE, NULL, 0x0,
         NULL, HFILL }},
 
-    { &hf_jnx_ouch_shares,
-      { "Shares",         "jnx_ouch.shares",
+    { &hf_jnx_ouch_quantity,
+      { "Quantity",         "jnx_ouch.quantity",
         FT_UINT32, BASE_DEC,  NULL, 0x0,
-        "Number of shares", HFILL }},
+        "Quantity", HFILL }},
 
-    { &hf_jnx_ouch_shares_64,
-      { "Shares",         "jnx_ouch.shares",
+    { &hf_jnx_ouch_quantity_64,
+      { "Quantity",         "jnx_ouch.quantity",
         FT_UINT64, BASE_DEC,  NULL, 0x0,
-        "Number of shares", HFILL }},
+        "Quantity", HFILL }},
 
     { &hf_jnx_ouch_minimum_quantity,
       { "Minimum quantity",         "jnx_ouch.minimum_quantity",
@@ -851,35 +851,35 @@ proto_register_jnx_ouch(void)
         FT_DOUBLE, BASE_NONE, NULL, 0x0,
         NULL, HFILL }},
 
-    { &hf_jnx_ouch_executed_shares,
-      { "Executed Shares",         "jnx_ouch.executed_shares",
+    { &hf_jnx_ouch_executed_quantity,
+      { "Executed Quantity",         "jnx_ouch.executed_quantity",
         FT_UINT32, BASE_DEC,  NULL, 0x0,
-        "Number of shares executed", HFILL }},
+        "Quantity executed", HFILL }},
 
-    { &hf_jnx_ouch_executed_shares_64,
-      { "Executed Shares",         "jnx_ouch.executed_shares",
+    { &hf_jnx_ouch_executed_quantity_64,
+      { "Executed Quantity",         "jnx_ouch.executed_quantity",
         FT_UINT64, BASE_DEC,  NULL, 0x0,
-        "Number of shares executed", HFILL }},
+        "Quantity executed", HFILL }},
 
-    { &hf_jnx_ouch_decrement_shares,
-      { "Decrement Shares",         "jnx_ouch.decrement_shares",
+    { &hf_jnx_ouch_decrement_quantity,
+      { "Decrement Quantity",         "jnx_ouch.decrement_quantity",
         FT_UINT32, BASE_DEC,  NULL, 0x0,
-        "Number of shares decremented from the order", HFILL }},
+        "Quantity decremented from the order", HFILL }},
 
-    { &hf_jnx_ouch_decrement_shares_64,
-      { "Decrement Shares",         "jnx_ouch.decrement_shares",
+    { &hf_jnx_ouch_decrement_quantity_64,
+      { "Decrement Quantity",         "jnx_ouch.decrement_quantity",
         FT_UINT64, BASE_DEC,  NULL, 0x0,
-        "Number of shares decremented from the order", HFILL }},
+        "Quantity decremented from the order", HFILL }},
 
-    { &hf_jnx_ouch_shares_prevented_from_trading,
-      { "Shares Prevented from Trading",         "jnx_ouch.shares_prevented_from_trading",
+    { &hf_jnx_ouch_quantity_prevented_from_trading,
+      { "Quantity Prevented from Trading",         "jnx_ouch.quantity_prevented_from_trading",
         FT_UINT32, BASE_DEC,  NULL, 0x0,
-        "Shares that would have executed if the trade had occurred", HFILL }},
+        "Quantity that would have executed if the trade had occurred", HFILL }},
 
-    { &hf_jnx_ouch_shares_prevented_from_trading_64,
-      { "Shares Prevented from Trading",         "jnx_ouch.shares_prevented_from_trading",
+    { &hf_jnx_ouch_quantity_prevented_from_trading_64,
+      { "Quantity Prevented from Trading",         "jnx_ouch.quantity_prevented_from_trading",
         FT_UINT64, BASE_DEC,  NULL, 0x0,
-        "Shares that would have executed if the trade had occurred", HFILL }},
+        "Quantity that would have executed if the trade had occurred", HFILL }},
 
     { &hf_jnx_ouch_order_state,
       { "Order State",         "jnx_ouch.order_state",

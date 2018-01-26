@@ -154,7 +154,7 @@ static gint ett_jnx_ouch = -1;
 
 static int hf_jnx_ouch_message_type = -1;
 static int hf_jnx_ouch_group = -1;
-static int hf_jnx_ouch_stock = -1;
+static int hf_jnx_ouch_orderbook = -1;
 static int hf_jnx_ouch_timestamp = -1;
 static int hf_jnx_ouch_system_event_code = -1;
 static int hf_jnx_ouch_canceled_reason = -1;
@@ -349,13 +349,13 @@ price(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int id, int 
 
 /* -------------------------- */
 static int
-stock(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
+orderbook(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
   if (jnx_ouch_tree) {
-      guint32 stock_id = tvb_get_ntohl(tvb, offset);
+      guint32 orderbook_id = tvb_get_ntohl(tvb, offset);
 
-      proto_tree_add_uint(jnx_ouch_tree, hf_jnx_ouch_stock, tvb, offset, 4, stock_id);
-      col_append_fstr(pinfo->cinfo, COL_INFO, " <%d>", stock_id);
+      proto_tree_add_uint(jnx_ouch_tree, hf_jnx_ouch_orderbook, tvb, offset, 4, orderbook_id);
+      col_append_fstr(pinfo->cinfo, COL_INFO, " <%d>", orderbook_id);
   }
   return offset + 4;
 }
@@ -392,7 +392,7 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 
   offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_quantity, hf_jnx_ouch_quantity_64, offset, "qty");
 
-  offset = stock(tvb, pinfo, jnx_ouch_tree, offset);
+  offset = orderbook(tvb, pinfo, jnx_ouch_tree, offset);
 
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_group, tvb, offset, 4, ENC_ASCII|ENC_NA);
   offset += 4;
@@ -472,7 +472,7 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, buy_sell_val);
 
   offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_quantity, hf_jnx_ouch_quantity_64, offset, "qty");
-  offset = stock(tvb, pinfo, jnx_ouch_tree, offset);
+  offset = orderbook(tvb, pinfo, jnx_ouch_tree, offset);
 
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_group, tvb, offset, 4, ENC_ASCII|ENC_NA);
   offset += 4;
@@ -515,7 +515,7 @@ replaced(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_buy_sell, tvb, offset, buy_sell_val);
 
   offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_quantity, hf_jnx_ouch_quantity_64, offset, "qty");
-  offset = stock(tvb, pinfo, jnx_ouch_tree, offset);
+  offset = orderbook(tvb, pinfo, jnx_ouch_tree, offset);
 
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_group, tvb, offset, 4, ENC_ASCII|ENC_NA);
   offset += 4;
@@ -761,15 +761,15 @@ proto_register_jnx_ouch(void)
         FT_UINT64, BASE_DEC, NULL, 0x0,
         NULL, HFILL }},
 
-    { &hf_jnx_ouch_stock,
-      { "Stock",         "jnx_ouch.stock",
+    { &hf_jnx_ouch_orderbook,
+      { "Stock",         "jnx_ouch.orderbook",
         FT_UINT32, BASE_DEC, NULL, 0x0,
-        "Unique security identifier", HFILL }},
+        "Unique orderbook identifier", HFILL }},
 
     { &hf_jnx_ouch_group,
       { "Group",         "jnx_ouch.group",
         FT_STRING, BASE_NONE, NULL, 0x0,
-        "Security group identifier", HFILL }},
+        "Orderbook group identifier", HFILL }},
 
     { &hf_jnx_ouch_system_event_code,
       { "Event Code",         "jnx_ouch.event_code",

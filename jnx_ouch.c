@@ -52,13 +52,13 @@ static const value_string message_types_val[] = {
  { 'U', "Replace Order" },
  { 'X', "Cancel Order" },
  { 'S', "System Event" },
- { 'A', "Accepted" },
- { 'R', "Replaced" }, /* 'U' on the wire, but use 'R' to disambiguate */
- { 'C', "Canceled" },
- { 'D', "AIQ Canceled" },
- { 'E', "Executed" },
- { 'e', "Executed with Counter Party" },
- { 'J', "Rejected" },
+ { 'A', "Order Accepted" },
+ { 'R', "Order Replaced" }, /* 'U' on the wire, but use 'R' to disambiguate */
+ { 'C', "Order Canceled" },
+ { 'D', "Order AIQ Canceled" },
+ { 'E', "Order Executed" },
+ { 'e', "Order Executed with Counter Party" },
+ { 'J', "Order Rejected" },
  { 0, NULL }
 };
 
@@ -125,7 +125,7 @@ static const value_string rejected_order_reason_val[] = {
 
 static const value_string time_in_force_val[] = {
  { 0,     "Immediate" },
- { 99999, "DAY" },
+ { 99999, "Day" },
 };
 
 static const value_string buy_sell_val[] = {

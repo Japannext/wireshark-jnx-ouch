@@ -339,10 +339,10 @@ static int
 price(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int id, int offset)
 {
   if (jnx_ouch_tree) {
-      gdouble value = tvb_get_ntohl(tvb, offset) / 10.0;
+      guint32 value = tvb_get_ntohl(tvb, offset);
 
-      proto_tree_add_double(jnx_ouch_tree, id, tvb, offset, 4, value);
-      col_append_fstr(pinfo->cinfo, COL_INFO, " price %g", value);
+      proto_tree_add_uint(jnx_ouch_tree, id, tvb, offset, 4, value);
+      col_append_fstr(pinfo->cinfo, COL_INFO, " price %u", value);
   }
   return offset + 4;
 }
@@ -842,13 +842,13 @@ proto_register_jnx_ouch(void)
         "Minimum acceptable quantity to execute", HFILL }},
 
     { &hf_jnx_ouch_price,
-      { "Price",         "jnx_ouch.price",
-        FT_DOUBLE, BASE_NONE, NULL, 0x0,
+      { "Price",         "jnx_itch.price",
+        FT_UINT32, BASE_DEC, NULL, 0x0,
         NULL, HFILL }},
 
     { &hf_jnx_ouch_execution_price,
       { "Execution Price",         "jnx_ouch.execution_price",
-        FT_DOUBLE, BASE_NONE, NULL, 0x0,
+        FT_UINT32, BASE_DEC, NULL, 0x0,
         NULL, HFILL }},
 
     { &hf_jnx_ouch_executed_quantity,

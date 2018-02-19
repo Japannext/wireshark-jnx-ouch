@@ -3,12 +3,12 @@
  *
  * Copyright 1998 Gerald Combs <gerald@wireshark.org>
  * Copyright 2013 David Arnold <davida@pobox.com>
- * Copyright 2013 SBI Japannext Co., Ltd. <https://www.japannext.co.jp/>
+ * Copyright 2013-2018 SBI Japannext Co., Ltd. <https://www.japannext.co.jp/>
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
  * Documentation:
- * https://www.japannext.co.jp/en/pub_data/pub_onboarding/Japannext_PTS_OUCH_v1.6.pdf
+ * https://www.japannext.co.jp/library/
  */
 
 #include "config.h"

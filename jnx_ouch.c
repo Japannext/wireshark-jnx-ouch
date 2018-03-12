@@ -844,12 +844,12 @@ proto_register_jnx_ouch(void)
     { &hf_jnx_ouch_price,
       { "Price",         "jnx_itch.price",
         FT_UINT32, BASE_DEC, NULL, 0x0,
-        NULL, HFILL }},
+        "Price", HFILL }},
 
     { &hf_jnx_ouch_execution_price,
       { "Execution Price",         "jnx_ouch.execution_price",
         FT_UINT32, BASE_DEC, NULL, 0x0,
-        NULL, HFILL }},
+        "Execution Price", HFILL }},
 
     { &hf_jnx_ouch_executed_quantity,
       { "Executed Quantity",         "jnx_ouch.executed_quantity",

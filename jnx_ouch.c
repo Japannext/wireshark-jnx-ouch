@@ -705,20 +705,20 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
 
 /* Register the protocol with Wireshark */
 
-static void range_delete_soupbintcp_port_callback(guint32 port) {
+static void range_delete_soupbintcp_port_callback(guint32 port, gpointer ptr _U_) {
     dissector_delete_uint("tcp.port", port, jnx_ouch_handle);
 }
 
-static void range_add_soupbintcp_port_callback(guint32 port) {
+static void range_add_soupbintcp_port_callback(guint32 port, gpointer ptr _U_) {
     dissector_add_uint("tcp.port", port, jnx_ouch_handle);
 }
 
 static void jnx_ouch_prefs(void)
 {
-    range_foreach(soupbintcp_port_range, range_delete_soupbintcp_port_callback);
+    range_foreach(soupbintcp_port_range, range_delete_soupbintcp_port_callback, NULL);
     wmem_free(wmem_epan_scope(), soupbintcp_port_range);
     soupbintcp_port_range = range_copy(wmem_epan_scope(), global_soupbintcp_port_range);
-    range_foreach(soupbintcp_port_range, range_add_soupbintcp_port_callback);
+    range_foreach(soupbintcp_port_range, range_add_soupbintcp_port_callback, NULL);
 }
 
 /** Returns a guess if a packet is OUCH or not

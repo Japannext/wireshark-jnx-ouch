@@ -716,8 +716,8 @@ static void range_add_soupbintcp_port_callback(guint32 port) {
 static void jnx_ouch_prefs(void)
 {
     range_foreach(soupbintcp_port_range, range_delete_soupbintcp_port_callback);
-    g_free(soupbintcp_port_range);
-    soupbintcp_port_range = range_copy(global_soupbintcp_port_range);
+    wmem_free(wmem_epan_scope(), soupbintcp_port_range);
+    soupbintcp_port_range = range_copy(wmem_epan_scope(), global_soupbintcp_port_range);
     range_foreach(soupbintcp_port_range, range_add_soupbintcp_port_callback);
 }
 
@@ -950,7 +950,7 @@ proto_register_jnx_ouch(void)
     jnx_ouch_module = prefs_register_protocol(proto_jnx_ouch, jnx_ouch_prefs);
 
     prefs_register_range_preference(jnx_ouch_module, "tcp.port", "SoupBinTCP ports", "SoupBinTCP port range", &global_soupbintcp_port_range, 65535);
-    soupbintcp_port_range = range_empty();
+    soupbintcp_port_range = range_empty(NULL);
 
 }
 

@@ -618,6 +618,8 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
     proto_tree *jnx_ouch_tree = NULL;
     int  offset = 0;
 
+    (void)(data);
+
     col_set_str(pinfo->cinfo, COL_PROTOCOL, "SBI Japannext OUCH");
 
     jnx_ouch_type = tvb_get_guint8(tvb, offset);

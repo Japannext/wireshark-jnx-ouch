@@ -20,13 +20,11 @@
 #include <epan/prefs.h>
 #include <wsutil/type_util.h>
 
-#define ENTER_ORDER_MSG_LEN 46
-#define ENTER_ORDER_WITH_ORDER_CLASSIFICATION_MSG_LEN 47
+#define ENTER_ORDER_MSG_LEN 47
 #define REPLACE_ORDER_MSG_LEN 26
 #define CANCEL_ORDER_MSG_LEN 9
 #define SYSTEM_EVENT_MSG_LEN 10
-#define ORDER_ACCEPTED_MSG_LEN 63
-#define ORDER_ACCEPTED_WITH_ORDER_CLASSIFICATION_MSG_LEN 64
+#define ORDER_ACCEPTED_MSG_LEN 64
 #define ORDER_REPLACED_MSG_LEN 52
 #define ORDER_CANCELED_MSG_LEN 18
 #define ORDER_AIQ_CANCELED_MSG_LEN 27
@@ -35,12 +33,10 @@
 #define ORDER_REJECTED_MSG_LEN 14
 
 // 8 byte Quantity fields
-#define ENTER_ORDER_MSG_LEN_64 54
-#define ENTER_ORDER_WITH_ORDER_CLASSIFICATION_MSG_LEN_64 55
+#define ENTER_ORDER_MSG_LEN_64 55
 #define REPLACE_ORDER_MSG_LEN_64 34
 #define CANCEL_ORDER_MSG_LEN_64 13
-#define ORDER_ACCEPTED_MSG_LEN_64 71
-#define ORDER_ACCEPTED_WITH_ORDER_CLASSIFICATION_MSG_LEN_64 72
+#define ORDER_ACCEPTED_MSG_LEN_64 72
 #define ORDER_REPLACED_MSG_LEN_64 60
 #define ORDER_CANCELED_MSG_LEN_64 22
 #define ORDER_AIQ_CANCELED_MSG_LEN_64 35
@@ -204,7 +200,7 @@ detect_32bit_message(tvbuff_t *tvb)
 
     switch (msg_type) {
     case 'O':
-        return msg_len == ENTER_ORDER_MSG_LEN || msg_len == ENTER_ORDER_WITH_ORDER_CLASSIFICATION_MSG_LEN;
+        return msg_len == ENTER_ORDER_MSG_LEN;
     case 'U':
         return msg_len == REPLACE_ORDER_MSG_LEN || msg_len == ORDER_REPLACED_MSG_LEN;
     case 'X':
@@ -212,7 +208,7 @@ detect_32bit_message(tvbuff_t *tvb)
     case 'S':
         return msg_len == SYSTEM_EVENT_MSG_LEN;
     case 'A':
-        return msg_len == ORDER_ACCEPTED_MSG_LEN || msg_len == ORDER_ACCEPTED_WITH_ORDER_CLASSIFICATION_MSG_LEN;
+        return msg_len == ORDER_ACCEPTED_MSG_LEN;
     case 'C':
         return msg_len == ORDER_CANCELED_MSG_LEN;
     case 'D':
@@ -238,13 +234,13 @@ detect_64bit_message(tvbuff_t *tvb)
 
     switch (msg_type) {
     case 'O':
-        return msg_len == ENTER_ORDER_MSG_LEN_64 || msg_len == ENTER_ORDER_WITH_ORDER_CLASSIFICATION_MSG_LEN_64;
+        return msg_len == ENTER_ORDER_MSG_LEN_64;
     case 'U':
         return msg_len == REPLACE_ORDER_MSG_LEN_64;
     case 'X':
         return msg_len == CANCEL_ORDER_MSG_LEN_64;
     case 'A':
-        return msg_len == ORDER_ACCEPTED_MSG_LEN_64 || msg_len == ORDER_ACCEPTED_WITH_ORDER_CLASSIFICATION_MSG_LEN_64;
+        return msg_len == ORDER_ACCEPTED_MSG_LEN_64;
     case 'R':
         return msg_len == ORDER_REPLACED_MSG_LEN_64;
     case 'C':
@@ -379,9 +375,7 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
   guint32 time_in_force;
   guint32 firm;
-  guint16 reported_len;
 
-  reported_len = tvb_reported_length(tvb);
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
 
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_client_reference, tvb, offset, 10, ENC_ASCII|ENC_NA);
@@ -414,8 +408,7 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 
   offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, hf_jnx_ouch_minimum_quantity_64, offset, "minqty");
 
-  if (reported_len == ENTER_ORDER_WITH_ORDER_CLASSIFICATION_MSG_LEN)
-    offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
 
   return offset;
 }
@@ -459,9 +452,6 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 {
   guint32 time_in_force;
   guint32 firm;
-  guint16 reported_len;
-
-  reported_len = tvb_reported_length(tvb);
 
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
 
@@ -497,8 +487,7 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_state, tvb, offset, order_state_val);
 
-  if (reported_len == ORDER_ACCEPTED_WITH_ORDER_CLASSIFICATION_MSG_LEN)
-    offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
+  offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
 
   return offset;
 }

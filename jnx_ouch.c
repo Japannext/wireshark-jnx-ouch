@@ -21,10 +21,12 @@
 #include <wsutil/type_util.h>
 
 #define ENTER_ORDER_MSG_LEN 47
+#define ENTER_ORDER_WITH_CASH_MARGIN_TYPE_MSG_LEN 48
 #define REPLACE_ORDER_MSG_LEN 26
 #define CANCEL_ORDER_MSG_LEN 9
 #define SYSTEM_EVENT_MSG_LEN 10
 #define ORDER_ACCEPTED_MSG_LEN 64
+#define ORDER_ACCEPTED_WITH_CASH_MARGIN_TYPE_MSG_LEN 65
 #define ORDER_REPLACED_MSG_LEN 52
 #define ORDER_CANCELED_MSG_LEN 18
 #define ORDER_AIQ_CANCELED_MSG_LEN 27
@@ -34,9 +36,11 @@
 
 // 8 byte Quantity fields
 #define ENTER_ORDER_MSG_LEN_64 55
+#define ENTER_ORDER_WITH_CASH_MARGIN_TYPE_MSG_LEN_64 56
 #define REPLACE_ORDER_MSG_LEN_64 34
 #define CANCEL_ORDER_MSG_LEN_64 13
 #define ORDER_ACCEPTED_MSG_LEN_64 72
+#define ORDER_ACCEPTED_WITH_CASH_MARGIN_TYPE_MSG_LEN_64 73
 #define ORDER_REPLACED_MSG_LEN_64 60
 #define ORDER_CANCELED_MSG_LEN_64 22
 #define ORDER_AIQ_CANCELED_MSG_LEN_64 35
@@ -141,6 +145,15 @@ static const value_string order_classification_val[] = {
  { 0, NULL}
 };
 
+static const value_string cash_margin_type_val[] = {
+ { '1', "Cash" },
+ { '2', "Margin open (Negotiable)" },
+ { '3', "Margin close (Negotiable)" },
+ { '4', "Margin open (Standardized)" },
+ { '5', "Margin close (Standardized)" },
+ { 0, NULL}
+};
+
 /* Initialize the protocol and registered fields */
 static int proto_jnx_ouch = -1;
 static dissector_handle_t jnx_ouch_handle;
@@ -183,6 +196,7 @@ static int hf_jnx_ouch_liquidity_flag = -1;
 static int hf_jnx_ouch_counter_party = -1;
 static int hf_jnx_ouch_match_number = -1;
 static int hf_jnx_ouch_order_classification = -1;
+static int hf_jnx_ouch_cash_margin_type = -1;
 
 static int hf_jnx_ouch_message = -1;
 
@@ -200,7 +214,7 @@ detect_32bit_message(tvbuff_t *tvb)
 
     switch (msg_type) {
     case 'O':
-        return msg_len == ENTER_ORDER_MSG_LEN;
+        return msg_len == ENTER_ORDER_MSG_LEN || msg_len == ENTER_ORDER_WITH_CASH_MARGIN_TYPE_MSG_LEN;
     case 'U':
         return msg_len == REPLACE_ORDER_MSG_LEN || msg_len == ORDER_REPLACED_MSG_LEN;
     case 'X':
@@ -208,7 +222,7 @@ detect_32bit_message(tvbuff_t *tvb)
     case 'S':
         return msg_len == SYSTEM_EVENT_MSG_LEN;
     case 'A':
-        return msg_len == ORDER_ACCEPTED_MSG_LEN;
+        return msg_len == ORDER_ACCEPTED_MSG_LEN || msg_len == ORDER_ACCEPTED_WITH_CASH_MARGIN_TYPE_MSG_LEN;
     case 'C':
         return msg_len == ORDER_CANCELED_MSG_LEN;
     case 'D':
@@ -234,13 +248,13 @@ detect_64bit_message(tvbuff_t *tvb)
 
     switch (msg_type) {
     case 'O':
-        return msg_len == ENTER_ORDER_MSG_LEN_64;
+        return msg_len == ENTER_ORDER_MSG_LEN_64 || msg_len == ENTER_ORDER_WITH_CASH_MARGIN_TYPE_MSG_LEN_64;
     case 'U':
         return msg_len == REPLACE_ORDER_MSG_LEN_64;
     case 'X':
         return msg_len == CANCEL_ORDER_MSG_LEN_64;
     case 'A':
-        return msg_len == ORDER_ACCEPTED_MSG_LEN_64;
+        return msg_len == ORDER_ACCEPTED_MSG_LEN_64 || msg_len == ORDER_ACCEPTED_WITH_CASH_MARGIN_TYPE_MSG_LEN_64;
     case 'R':
         return msg_len == ORDER_REPLACED_MSG_LEN_64;
     case 'C':
@@ -375,7 +389,9 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
 {
   guint32 time_in_force;
   guint32 firm;
+  guint16 reported_len;
 
+  reported_len = tvb_reported_length(tvb);
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
 
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_client_reference, tvb, offset, 10, ENC_ASCII|ENC_NA);
@@ -409,6 +425,8 @@ order(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offset)
   offset = quantity(tvb, pinfo, jnx_ouch_tree, hf_jnx_ouch_minimum_quantity, hf_jnx_ouch_minimum_quantity_64, offset, "minqty");
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
+  if (reported_len == ENTER_ORDER_WITH_CASH_MARGIN_TYPE_MSG_LEN || reported_len == ENTER_ORDER_WITH_CASH_MARGIN_TYPE_MSG_LEN_64)
+    offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_cash_margin_type, tvb, offset, cash_margin_type_val);
 
   return offset;
 }
@@ -452,7 +470,9 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
 {
   guint32 time_in_force;
   guint32 firm;
+  guint16 reported_len;
 
+  reported_len = tvb_reported_length(tvb);
   offset = order_token(tvb, pinfo, jnx_ouch_tree, offset, hf_jnx_ouch_order_token);
 
   proto_tree_add_item(jnx_ouch_tree, hf_jnx_ouch_client_reference, tvb, offset, 10, ENC_ASCII|ENC_NA);
@@ -488,6 +508,8 @@ accepted(tvbuff_t *tvb, packet_info *pinfo, proto_tree *jnx_ouch_tree, int offse
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_state, tvb, offset, order_state_val);
 
   offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_order_classification, tvb, offset, order_classification_val);
+  if (reported_len == ORDER_ACCEPTED_WITH_CASH_MARGIN_TYPE_MSG_LEN || reported_len == ORDER_ACCEPTED_WITH_CASH_MARGIN_TYPE_MSG_LEN_64)
+    offset = proto_tree_add_char(jnx_ouch_tree, hf_jnx_ouch_cash_margin_type, tvb, offset, cash_margin_type_val);
 
   return offset;
 }
@@ -920,7 +942,12 @@ proto_register_jnx_ouch(void)
     { &hf_jnx_ouch_order_classification,
       { "Order Classification",         "jnx_ouch.order_classification",
         FT_STRING, BASE_NONE, NULL, 0x0,
-        "High Frequency Trading (HFT) order classification", HFILL }}
+        "High Frequency Trading (HFT) order classification", HFILL }},
+
+    { &hf_jnx_ouch_cash_margin_type,
+      { "Cash Margin Type",         "jnx_ouch.cash_margin_type",
+        FT_STRING, BASE_NONE, NULL, 0x0,
+        NULL, HFILL }}
 
     };
 

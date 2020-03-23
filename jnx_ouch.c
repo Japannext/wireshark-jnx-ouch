@@ -3,7 +3,7 @@
  *
  * Copyright 1998 Gerald Combs <gerald@wireshark.org>
  * Copyright 2013 David Arnold <davida@pobox.com>
- * Copyright 2013-2018 SBI Japannext Co., Ltd. <https://www.japannext.co.jp/>
+ * Copyright 2013-2020 Japannext Co., Ltd. <https://www.japannext.co.jp/>
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
@@ -631,7 +631,7 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
 
     (void)(data);
 
-    col_set_str(pinfo->cinfo, COL_PROTOCOL, "SBI Japannext OUCH");
+    col_set_str(pinfo->cinfo, COL_PROTOCOL, "Japannext OUCH");
 
     jnx_ouch_type = tvb_get_guint8(tvb, offset);
     reported_len = tvb_reported_length(tvb);
@@ -645,7 +645,7 @@ dissect_jnx_ouch(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void* data
         col_clear(pinfo->cinfo, COL_INFO);
         col_add_str(pinfo->cinfo, COL_INFO, rep);
         if (tree) {
-            ti = proto_tree_add_protocol_format(tree, proto_jnx_ouch, tvb, offset, -1, "SBI Japannext OUCH %s",
+            ti = proto_tree_add_protocol_format(tree, proto_jnx_ouch, tvb, offset, -1, "Japannext OUCH %s",
                                                 rep);
 
             jnx_ouch_tree = proto_item_add_subtree(ti, ett_jnx_ouch);
@@ -959,7 +959,7 @@ proto_register_jnx_ouch(void)
     module_t *jnx_ouch_module;
 
     /* Register the protocol name and description */
-    proto_jnx_ouch = proto_register_protocol("SBI Japannext OUCH", "JNX-OUCH", "jnx_ouch");
+    proto_jnx_ouch = proto_register_protocol("Japannext OUCH", "JNX-OUCH", "jnx_ouch");
 
     /* Required function calls to register the header fields and subtrees used */
     proto_register_field_array(proto_jnx_ouch, hf, array_length(hf));

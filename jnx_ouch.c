@@ -11,14 +11,24 @@
  * https://www.japannext.co.jp/library/
  */
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
-
-#include <stdlib.h>
-#include <string.h>
+#endif
 
 #include <epan/packet.h>
-#include <epan/prefs.h>
-#include <wsutil/type_util.h>
+#include <epan/proto.h>
+#include <ws_attributes.h>
+
+#ifndef VERSION
+#define VERSION "1.11.0"
+#endif
+
+#define DLL_PUBLIC __attribute__((__visibility__("default")))
+
+DLL_PUBLIC const gchar plugin_version[] = VERSION;
+DLL_PUBLIC const gchar plugin_release[] = VERSION_RELEASE;
+
+DLL_PUBLIC void plugin_register(void);
 
 #define ENTER_ORDER_MSG_LEN 47
 #define ENTER_ORDER_WITH_CASH_MARGIN_TYPE_MSG_LEN 48
@@ -981,4 +991,14 @@ proto_reg_handoff_jnx_ouch(void)
 {
     jnx_ouch_handle = create_dissector_handle(dissect_jnx_ouch, proto_jnx_ouch);
     heur_dissector_add("soupbintcp", dissect_jnx_ouch_heur, "OUCH over SoupBinTCP", "jnx_ouch_soupbintcp", proto_jnx_ouch, HEURISTIC_ENABLE);
+}
+
+void
+plugin_register(void)
+{
+    static proto_plugin plug;
+
+    plug.register_protoinfo = proto_register_jnx_ouch;
+    plug.register_handoff = proto_reg_handoff_jnx_ouch; /* or NULL */
+    proto_register_plugin(&plug);
 }

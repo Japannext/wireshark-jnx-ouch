@@ -3,7 +3,7 @@
  *
  * Copyright 1998 Gerald Combs <gerald@wireshark.org>
  * Copyright 2013 David Arnold <davida@pobox.com>
- * Copyright 2013-2020 Japannext Co., Ltd. <https://www.japannext.co.jp/>
+ * Copyright 2013-2021 Japannext Co., Ltd. <https://www.japannext.co.jp/>
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  *
